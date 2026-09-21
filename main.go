@@ -42,17 +42,23 @@ func checkHandler(w http.ResponseWriter, r *http.Request) {
 
         s := make(chan struct{}, 5)
 
-        for _, u := range req.URLs {
-                wg.Add(1)
-
-                go func(u string) {
-                        defer wg.Done()
-                        res := probe(u)
-                        mu.Lock()
-                        defer mu.Unlock()
-                        results[u] = res
-                }(u)
+        select {
+          case <-s:
+            wg.Add(1)
+            go func(u string) {
+                    defer wg.Done()
+                    res := probe(u)
+                    mu.Lock()
+                    defer mu.Unlock()
+                    results[u] = res
+            }(u)
+            return
         }
+
+        for _, u := range req.URLs {
+
+        }
+
         wg.Wait()
 
         out := make([]Result, 0, len(results))
