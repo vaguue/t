@@ -37,11 +37,20 @@ func checkHandler(w http.ResponseWriter, r *http.Request) {
 
         results := map[string]Result{}
         var wg sync.WaitGroup
+
+        var mu sync.Mutex
+
+        s := make(chan struct{}, 5)
+
         for _, u := range req.URLs {
                 wg.Add(1)
+
                 go func(u string) {
-                        defer w g.Done()
-                        results[u] = probe(u)
+                        defer wg.Done()
+                        res := probe(u)
+                        mu.Lock()
+                        defer mu.Unlock()
+                        results[u] = res
                 }(u)
         }
         wg.Wait()

@@ -1,3 +1,3 @@
-module github.com/seva/tech-interview
+module t
 
 go 1.22.2
