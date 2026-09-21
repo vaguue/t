@@ -59,34 +59,4 @@ func checkHandler(w http.ResponseWriter, r *http.Request) {
 	results := map[string]Result{}
 
 	var mu sync.Mutex
-	var wg sync.WaitGroup
-
-	for _, u := range req.URLs {
-		wg.Add(1)
-		go func(u string) {
-                        mu.Lock();
-                        res := probe(u);
-			defer mu.Unlock()
-			defer wg.Done()
-			results[u] = res
-		}(u)
-	}
-	wg.Wait()
-
-	out := make([]Result, 0, len(results))
-	for _, res := range results {
-		out = append(out, res)
-	}
-	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string][]Result{"results": out})
-}
-
-// probe simulates a health check. Most hosts answer quickly; some hang.
-func probe(u string) Result {
-	start := time.Now()
-	time.Sleep(time.Duration(50+rand.Intn(350)) * time.Millisecond)
-	if rand.Intn(8) == 0 {
-		time.Sleep(5 * time.Second) // a stuck host
-	}
-	return Result{URL: u, Up: rand.Intn(5) != 0, Ms: time.Since(start).Milliseconds()}
 }
