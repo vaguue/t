@@ -40,10 +40,14 @@ func checkHandler(w http.ResponseWriter, r *http.Request) {
 
         var mu sync.Mutex
 
+        type Job struct {
+          url string
+        }
+
         s := make(chan struct{}, 5)
 
         select {
-          case <-s:
+          case j, ok<-s:
             wg.Add(1)
             go func(u string) {
                     defer wg.Done()
